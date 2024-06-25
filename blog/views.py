@@ -4,14 +4,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from .models import Category, Post, Comment
 from .serializers import (
     CategorySerializer,
     PostSerializer,
     CommentSerializer,
 )
-from .permissions import IsAuthor
 
 
 # ============================== Category ViewSet ============================ #
@@ -28,6 +27,7 @@ class CategoryViewSet(ModelViewSet):
 class PostViewSet(ModelViewSet):
     serializer_class = PostSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsAuthenticatedOrReadOnly]
     lookup_field = "slug"
 
     @extend_schema(
@@ -90,18 +90,20 @@ class PostViewSet(ModelViewSet):
 # ============================== Comment ViewSet ============================ #
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-
+    permission_classes = [IsAuthenticatedOrReadOnly]
     @extend_schema(
         description="Retrieve a list of comments",
         responses=CommentSerializer,
     )
     def get_queryset(self):
-        post_id = self.kwargs.get("post_pk")
-        comments = Comment.objects.filter(post_id=post_id)
+        post_slug = self.kwargs.get(
+            "post_slug"
+        )  # The lookup_field of the post is slug instead of id. So we'll refer to the slugfield to work with comments
+        comments = Comment.objects.filter(post__slug=post_slug)
         return comments
 
     def get_serializer_context(self):
-        post_id = self.kwargs.get("post_pk")
-        post = Post.objects.get(id=post_id)
-        user = self.request.user
+        post_id = self.kwargs.get("post_slug")
+        post = Post.objects.get(slug=post_id)  # comment.post
+        user = self.request.user  # comment.user
         return {"post": post, "user": user}

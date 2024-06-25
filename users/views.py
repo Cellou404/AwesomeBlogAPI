@@ -8,6 +8,7 @@ from .models import *
 from .serializers import UserProfileSerializer, PostSerializer
 
 from blog.models import Post
+from blog.permissions import IsAuthor
 
 # Create your views here.
 
@@ -15,11 +16,11 @@ from blog.models import Post
 class UserProfileViewset(viewsets.ModelViewSet):
     serializer_class = UserProfileSerializer
     pagination_class = PageNumberPagination
-    permission_classes = (IsAdminUser, IsAuthenticatedOrReadOnly)
+    # permission_classes = (IsAdminUser, IsAuthenticatedOrReadOnly)
     lookup_field = "username"
 
     def get_queryset(self):
-        queryset = Profile.objects.all()
+        queryset = Profile.objects.order_by("-date_joined")
         return queryset
 
     def get_serializer_context(self):
@@ -56,9 +57,11 @@ class UserProfileViewset(viewsets.ModelViewSet):
 
 
 # User Post Viewset
+
 class UserPostsViewset(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsAuthor | IsAuthenticatedOrReadOnly]
     lookup_field = "slug"
 
     def get_queryset(self):
@@ -66,3 +69,11 @@ class UserPostsViewset(viewsets.ModelViewSet):
         print(author_id)
         queryset = Post.objects.filter(author__profile__username=author_id)
         return queryset
+
+    # Get serializer context, (to perform create)
+    """
+    def get_serializer_context(self):
+        if self.request.user:
+            author = self.request.user 
+            return {"author": author}
+    """    

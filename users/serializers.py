@@ -16,6 +16,8 @@ class CreateUserSerializer(UserCreateSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializes a user profile object"""
 
+    posts_count = serializers.SerializerMethodField(method_name="get_posts_count")
+
     class Meta:
         model = Profile
         fields = [
@@ -35,6 +37,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "phone",
             "date_joined",
             "date_updated",
+            "posts_count",
         ]
         lookup_field = "username"
 
@@ -43,6 +46,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user = self.context["user"]
         profile = Profile.objects.create(user=user, **validated_data)
         return profile
+
+    def get_posts_count(self, obj):
+        user_id = obj.user.id  # Get the id of the user this profile belongs to
+        queryset = Post.objects.filter(
+            author__id=user_id
+        ).count()  # Filter by author and count number of posts
+        return queryset
 
 
 class BasicUserProfileSerializer(serializers.HyperlinkedModelSerializer):
@@ -74,3 +84,13 @@ class PostSerializer(serializers.ModelSerializer):
             "date_created",
             "date_updated",
         ]
+
+    # Overrinding default create method
+    """
+    def create(self, validated_data):
+        author = self.context[
+            "author"
+        ]  # the current  logged-in user is the author while creatind a post
+        post = Post.objects.create(author=author, **validated_data)
+        return post
+    """
