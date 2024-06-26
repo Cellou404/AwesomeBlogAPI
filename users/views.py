@@ -71,9 +71,8 @@ class UserPostsViewset(viewsets.ModelViewSet):
         return queryset
 
     # Get serializer context, (to perform create)
-    """
+
     def get_serializer_context(self):
         if self.request.user:
-            author = self.request.user 
+            author = self.kwargs.get("profile_username")
             return {"author": author}
-    """    
