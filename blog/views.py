@@ -91,16 +91,45 @@ class PostViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    @extend_schema(
-        description="Retrieve a list of comments",
-        responses=CommentSerializer,
-    )
+
+    @extend_schema(description="Retrieve a list of comments", responses=CommentSerializer)
     def get_queryset(self):
         post_slug = self.kwargs.get(
             "post_slug"
         )  # The lookup_field of the post is slug instead of id. So we'll refer to the slugfield to work with comments
         comments = Comment.objects.filter(post__slug=post_slug)
         return comments
+    
+    
+    @extend_schema(
+        description="Update a comment",
+        request=CommentSerializer,
+        responses=CommentSerializer,
+    )
+    def update(self, request, *args, **kwargs):
+        #
+        comment = self.get_object()
+        # Check if the user is the author of the comment
+        if request.user != comment.user:
+            return Response(
+                {"error": "You are not authorized to perform this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().update(request, *args, **kwargs)
+    
+    @extend_schema(
+        description="Delete a comment",
+        responses=CommentSerializer,
+    )
+    def destroy(self, request, *args, **kwargs):
+        comment = self.get_object()
+        # Check if the user is the author of the comment
+        if request.user != comment.user:
+            return Response(
+                {"error": "You are not authorized to perform this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().destroy(request, *args, **kwargs)
 
     def get_serializer_context(self):
         post_id = self.kwargs.get("post_slug")
