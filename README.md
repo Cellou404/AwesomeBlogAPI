@@ -4,6 +4,10 @@
 
 This is a simple blog api that allows users to create , read, update and delete posts. It uses `Django` & `DjangoRestFramework` as the server framework with Postgres for database management.
 
+## Screenshots
+
+![Screenshot](./docs/img/API_Screenshot_from_thunder_client.png)
+
 ## How to use ?
 
 ### Clone the repo
