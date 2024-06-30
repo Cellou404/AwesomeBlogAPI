@@ -66,7 +66,7 @@ class BasicUserProfileSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
 
-class PostSerializer(serializers.ModelSerializer):
+class UserPostSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(read_only=True)
 
     class Meta:

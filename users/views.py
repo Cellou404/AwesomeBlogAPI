@@ -5,7 +5,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from .models import *
-from .serializers import UserProfileSerializer, PostSerializer
+from .serializers import UserProfileSerializer, UserPostSerializer
 
 from blog.models import Post
 from blog.permissions import IsAuthor
@@ -59,7 +59,7 @@ class UserProfileViewset(viewsets.ModelViewSet):
 # User Post Viewset
 
 class UserPostsViewset(viewsets.ModelViewSet):
-    serializer_class = PostSerializer
+    serializer_class = UserPostSerializer
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthor | IsAuthenticatedOrReadOnly]
     lookup_field = "slug"
@@ -79,7 +79,7 @@ class UserPostsViewset(viewsets.ModelViewSet):
     
     @extend_schema(
         description="Update a post. Only the Author of the post can perform this action",
-        responses=PostSerializer,
+        responses=UserPostSerializer,
     )
     def update(self, request, *args, **kwargs):
         post = self.get_object()
@@ -97,7 +97,7 @@ class UserPostsViewset(viewsets.ModelViewSet):
 
     @extend_schema(
         description="Delete a post. Only the Author of the post can perform this action",
-        request=PostSerializer,
+        request=UserPostSerializer,
     )
     def destroy(self, request, *args, **kwargs):
         post = self.get_object()

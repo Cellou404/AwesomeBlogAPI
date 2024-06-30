@@ -143,7 +143,6 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": (
-        "JWT",
         "Bearer",
     ),
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=120),
