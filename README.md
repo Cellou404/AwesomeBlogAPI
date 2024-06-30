@@ -13,7 +13,7 @@ This is a simple blog api that allows users to create , read, update and delete 
 ### Clone the repo
 
 ```bash
-git clone https://github.com/shahidhk/awesome-blog-api.git
+git clone https://github.com/Cellou404/AwesomeBlogAPI.git
 ```
 
 ### Create a virtual environment
