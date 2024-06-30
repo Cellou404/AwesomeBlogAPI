@@ -76,3 +76,39 @@ class UserPostsViewset(viewsets.ModelViewSet):
         if self.request.user:
             author = self.kwargs.get("profile_username")
             return {"author": author}
+    
+    @extend_schema(
+        description="Update a post. Only the Author of the post can perform this action",
+        responses=PostSerializer,
+    )
+    def update(self, request, *args, **kwargs):
+        post = self.get_object()
+
+        if request.user != post.author:
+            return Response(
+                {"error": "You are not authorized to perform this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        super().update(request, *args, **kwargs)
+        return Response(
+            {"success": "The post has been updated"}, status=status.HTTP_200_OK
+        )
+
+    @extend_schema(
+        description="Delete a post. Only the Author of the post can perform this action",
+        request=PostSerializer,
+    )
+    def destroy(self, request, *args, **kwargs):
+        post = self.get_object()
+
+        if request.user != post.author:
+            return Response(
+                {"error": "You are not authorized to perform this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        super().destroy(request, *args, **kwargs)
+        return Response(
+            {"success": "The post has been deleted"}, status=status.HTTP_204_NO_CONTENT
+        )
