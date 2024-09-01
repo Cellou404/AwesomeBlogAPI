@@ -29,13 +29,13 @@ class PostSerializer(serializers.ModelSerializer):
             "date_updated", "related_posts",
         ]
 
-    def get_related_posts(self, post):
+    def get_related_posts(self, post) -> list:
         category = post.category
         posts = Post.objects.filter(category=category).exclude(id=post.id)
         serializer = BasicPostSerializer(posts, many=True)
         return serializer.data
 
-    def get_comments_count(self, post):
+    def get_comments_count(self, post) -> int:
         comments = Comment.objects.filter(post=post).count()
         return comments
 

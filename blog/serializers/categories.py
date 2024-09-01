@@ -22,7 +22,7 @@ class CategorySerializer(serializers.ModelSerializer):
             "is_active", "date_created", "posts"
         ]
 
-    def get_posts(self, cat_name):
+    def get_posts(self, cat_name) -> list:
         category = Category.objects.get(name=cat_name)
         posts = Post.objects.filter(category=category)
         serializer = BasicPostSerializer(posts, many=True)
