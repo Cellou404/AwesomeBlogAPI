@@ -4,11 +4,11 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import Category, Post, Comment
+from blog.models import Category, Post, Comment
 
-from serializers.posts import PostSerializer
-from serializers.categories import CategorySerializer
-from serializers.comments import CommentSerializer
+from .serializers.posts import PostSerializer
+from .serializers.categories import CategorySerializer
+from .serializers.comments import CommentSerializer
 
 
 class CategoryViewSet(ModelViewSet):

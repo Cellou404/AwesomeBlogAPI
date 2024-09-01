@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Post
+from blog.models import Category, Post
 
 
 # Basic Serializer for Post Model
