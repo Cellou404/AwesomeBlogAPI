@@ -34,6 +34,31 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Create a .env file
+
+```bash
+touch .env
+```
+
+Fill the .env file with the following values:
+
+```python
+SECRET_KEY=your_secret_key
+DEBUG=True
+DB_NAME=your_db_name
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_HOST=your_db_host
+DB_PORT=your_db_port
+```
+
+### Migrate the database
+
+```bash
+python manage.py makemigrations # you can specify the app name. e.g. python manage.py makemigrations blog
+python manage.py migrate
+```
+
 ### Create a superuser
 
 ```bash
