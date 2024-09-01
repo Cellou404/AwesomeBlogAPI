@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Post
+from blog.models import Category, Post
 
 
 # Basic Serializer for Post Model
@@ -22,7 +22,7 @@ class CategorySerializer(serializers.ModelSerializer):
             "is_active", "date_created", "posts"
         ]
 
-    def get_posts(self, cat_name):
+    def get_posts(self, cat_name) -> list:
         category = Category.objects.get(name=cat_name)
         posts = Post.objects.filter(category=category)
         serializer = BasicPostSerializer(posts, many=True)

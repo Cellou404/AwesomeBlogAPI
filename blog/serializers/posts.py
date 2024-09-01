@@ -1,10 +1,10 @@
 from django.utils import timezone
 from rest_framework import serializers
-from .models import Post, Comment
+from blog.models import Post, Comment
 
 
 class BasicPostSerializer(serializers.ModelSerializer):
-    category = serializer.StringRelatedField()
+    category = serializers.StringRelatedField()
 
     class Meta:
         model = Post
@@ -29,27 +29,17 @@ class PostSerializer(serializers.ModelSerializer):
             "date_updated", "related_posts",
         ]
 
-    """ Get related posts to each post
-    1. Get the current post's id
-    2. Query all other posts that have a similar category to current post
-    3. Remove the current post from the list
-    """
-
-    def get_related_posts(self, post):
+    def get_related_posts(self, post) -> list:
         category = post.category
         posts = Post.objects.filter(category=category).exclude(id=post.id)
         serializer = BasicPostSerializer(posts, many=True)
         return serializer.data
 
-    # Get comments count for each post
-    def get_comments_count(self, post):
+    def get_comments_count(self, post) -> int:
         comments = Comment.objects.filter(post=post).count()
         return comments
 
-    # Overrinding default create method
     def create(self, validated_data):
-        author = self.context[
-            "author"
-        ]  # the current  logged-in user is the author while creatind a post
+        author = self.context["author"]
         post = Post.objects.create(author=author, **validated_data)
         return post
