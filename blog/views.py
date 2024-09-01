@@ -12,17 +12,13 @@ from serializers.categories import CategorySerializer
 from serializers.comments import CommentSerializer
 
 
-# ============================== Category ViewSet ============================ #
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = PageNumberPagination
-    permission_classes = [
-        IsAuthenticatedOrReadOnly,
-    ]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-# ============================== Post ViewSet ============================ #
 class PostViewSet(ModelViewSet):
     serializer_class = PostSerializer
     pagination_class = PageNumberPagination
@@ -37,17 +33,16 @@ class PostViewSet(ModelViewSet):
         category = self.request.query_params.get("category")
         author = self.request.query_params.get("author")
         if category is not None:
-            queryset = Post.objects.filter(category__name__iexact=category)
+            queryset = queryset.filter(category__name__iexact=category)
         if author is not None:
-            queryset = Post.objects.filter(author__profile__username=author)
-
+            queryset = queryset.filter(author__profile__username=author)
         return queryset
 
-    # Get serializer context, (to perform create)
     def get_serializer_context(self):
+        context = super().get_serializer_context()
         if self.request.user:
-            author = self.request.user
-            return {"author": author}
+            context["author"] = self.request.user
+        return context
 
     @extend_schema(
         description="Update a post. Only the Author of the post can perform this action",
@@ -55,13 +50,11 @@ class PostViewSet(ModelViewSet):
     )
     def update(self, request, *args, **kwargs):
         post = self.get_object()
-
         if request.user != post.author:
             return Response(
                 {"error": "You are not authorized to perform this action"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-
         super().update(request, *args, **kwargs)
         return Response(
             {"success": "The post has been updated"}, status=status.HTTP_200_OK
@@ -73,56 +66,48 @@ class PostViewSet(ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         post = self.get_object()
-
         if request.user != post.author:
             return Response(
                 {"error": "You are not authorized to perform this action"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-
         super().destroy(request, *args, **kwargs)
         return Response(
             {"success": "The post has been deleted"}, status=status.HTTP_204_NO_CONTENT
         )
 
 
-# ============================== Comment ViewSet ============================ #
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
+    pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     @extend_schema(description="Retrieve a list of comments", responses=CommentSerializer)
     def get_queryset(self):
-        post_slug = self.kwargs.get(
-            "post_slug"
-        )  # The lookup_field of the post is slug instead of id. So we'll refer to the slugfield to work with comments
+        post_slug = self.kwargs.get("post_slug")
         comments = Comment.objects.filter(post__slug=post_slug)
         return comments
-    
-    
+
     @extend_schema(
         description="Update a comment",
         request=CommentSerializer,
         responses=CommentSerializer,
     )
     def update(self, request, *args, **kwargs):
-        #
         comment = self.get_object()
-        # Check if the user is the author of the comment
         if request.user != comment.user:
             return Response(
                 {"error": "You are not authorized to perform this action"},
                 status=status.HTTP_403_FORBIDDEN,
             )
         return super().update(request, *args, **kwargs)
-    
+
     @extend_schema(
         description="Delete a comment",
         responses=CommentSerializer,
     )
     def destroy(self, request, *args, **kwargs):
         comment = self.get_object()
-        # Check if the user is the author of the comment
         if request.user != comment.user:
             return Response(
                 {"error": "You are not authorized to perform this action"},
@@ -131,7 +116,12 @@ class CommentViewSet(ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
     def get_serializer_context(self):
-        post_id = self.kwargs.get("post_slug")
-        post = Post.objects.get(slug=post_id)  # comment.post
-        user = self.request.user  # comment.user
-        return {"post": post, "user": user}
+        context = super().get_serializer_context()
+        post_slug = self.kwargs.get("post_slug")
+        try:
+            post = Post.objects.get(slug=post_slug)
+        except Post.DoesNotExist:
+            post = None
+        context["post"] = post
+        context["user"] = self.request.user
+        return context
