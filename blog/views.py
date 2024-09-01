@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -118,7 +119,7 @@ class CommentViewSet(ModelViewSet):
         context = super().get_serializer_context()
         post_slug = self.kwargs.get("post_slug")
         try:
-            post = Post.objects.get(slug=post_slug)
+            post = get_object_or_404(Post, slug=post_slug)
         except Post.DoesNotExist:
             post = None
         context["post"] = post
