@@ -4,7 +4,7 @@ from .models import Post, Comment
 
 
 class BasicPostSerializer(serializers.ModelSerializer):
-    category = serializer.StringRelatedField()
+    category = serializers.StringRelatedField()
 
     class Meta:
         model = Post
