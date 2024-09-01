@@ -23,7 +23,7 @@ class PostViewSet(ModelViewSet):
     serializer_class = PostSerializer
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticatedOrReadOnly]
-    lookup_field = "slug"
+    lookup_field = "id"
 
     @extend_schema(
         description="Retrieve a list of posts", responses=PostSerializer(many=True)
@@ -37,6 +37,11 @@ class PostViewSet(ModelViewSet):
         if author is not None:
             queryset = queryset.filter(author__profile__username=author)
         return queryset
+ 
+    def get_object(self):
+        obj = get_object_or_404(self.get_queryset(), id=self.kwargs["id"])
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -81,12 +86,18 @@ class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticatedOrReadOnly]
+    lookup_field = "id"
 
     @extend_schema(description="Retrieve a list of comments", responses=CommentSerializer)
     def get_queryset(self):
-        post_slug = self.kwargs.get("post_slug")
-        comments = Comment.objects.filter(post__slug=post_slug)
+        post_id = self.kwargs.get("post_id")
+        comments = Comment.objects.filter(post__id=post_id)
         return comments
+    
+    def get_object(self):
+        obj = get_object_or_404(self.get_queryset(), id=self.kwargs["id"])
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     @extend_schema(
         description="Update a comment",
@@ -117,9 +128,9 @@ class CommentViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        post_slug = self.kwargs.get("post_slug")
+        post_id = self.kwargs.get("post_id")
         try:
-            post = get_object_or_404(Post, slug=post_slug)
+            post = get_object_or_404(Post, id=post_id)
         except Post.DoesNotExist:
             post = None
         context["post"] = post
