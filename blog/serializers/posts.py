@@ -39,6 +39,11 @@ class PostSerializer(serializers.ModelSerializer):
         comments = Comment.objects.filter(post=post).count()
         return comments
 
+    def validate_overview(self, value):
+        if len(value) > 500:
+            raise serializers.ValidationError("Overview must be less than 500 characters")
+        return value
+
     def create(self, validated_data):
         author = self.context["author"]
         post = Post.objects.create(author=author, **validated_data)
